@@ -1,12 +1,15 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QScrollArea, QGroupBox, QSizePolicy, QSpacerItem
+from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QScrollArea, QGroupBox, QSizePolicy, QSpacerItem, QGridLayout, \
+    QPushButton
 from PyQt6.QtWidgets import QVBoxLayout, QLabel, QSizePolicy, QGroupBox
 
 
 class PatientResultsWidget(QWidget):
-    def __init__(self, vaccineManager):
+    def __init__(self, patientCheckWidget, vaccineManager):
         super().__init__()
 
         self.vaccineManager = vaccineManager
+
         self.patient_name = ""
         self.remark_dict = {}
 
@@ -25,19 +28,29 @@ class PatientResultsWidget(QWidget):
         self.name_label = QLabel("")
         self.name_label.setStyleSheet("font-weight: bold; font-size: 16px;")
 
-        self.layout.addWidget(self.name_label)
+        self.to_input_button = QPushButton("Back")
+        self.to_input_button.clicked.connect(patientCheckWidget.toInput)
+        self.to_input_button.setFixedSize(QSize(100, 30))
+
+        self.top_layout = QGridLayout()
+        self.top_layout.addWidget(self.name_label, 0, 0, alignment=Qt.AlignmentFlag.AlignBottom)
+        self.top_layout.addWidget(self.to_input_button, 0, 5)
+
+        self.layout.addLayout(self.top_layout)
         self.layout.addWidget(self.scroll_area)
+
+        self.refreshUI()
 
         self.setLayout(self.layout)
 
-        self.refresh()
+        self.vaccineManager.updated.connect(self.refreshUI)
 
     def addResults(self, patient_name, remark_dict):
         self.patient_name = patient_name
         self.remark_dict = remark_dict
-        self.refresh()
+        self.refreshUI()
 
-    def refresh(self):
+    def refreshUI(self):
         if not self.vaccineManager.initialised:
             return
 

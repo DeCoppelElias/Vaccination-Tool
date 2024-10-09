@@ -5,7 +5,7 @@ from GUI.ExcelViewerWidget import ExcelViewerWidget
 
 
 class ViewVaccinesWidget(QWidget):
-    def __init__(self):
+    def __init__(self, vaccineManager):
         super().__init__()
 
         exe_dir = os.path.dirname(os.path.abspath(__file__))
@@ -27,3 +27,7 @@ class ViewVaccinesWidget(QWidget):
         layout.addWidget(excel3)
 
         self.setLayout(layout)
+
+        vaccineManager.updated.connect(excel1.reloadExcel)
+        vaccineManager.updated.connect(excel2.reloadExcel)
+        vaccineManager.updated.connect(excel3.reloadExcel)

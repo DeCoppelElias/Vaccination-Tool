@@ -2,7 +2,7 @@ import sys
 
 from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QAction
-from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, \
+from PyQt6.QtWidgets import QWidget, QMainWindow, \
     QToolBar
 from PyQt6.QtWidgets import QStackedLayout
 
@@ -10,21 +10,20 @@ from GUI.ViewIllnessesWidget import ViewIllnessesWidget
 from GUI.WarningDialog import WarningDialog
 from GUI.ViewVaccinesWidget import ViewVaccinesWidget
 from GUI.PatientCheckGUI.PatientCheckWidget import PatientCheckWidget
-from VaccineManager.VaccineManager import VaccineManager
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, vaccineManager):
         super().__init__()
 
         dlg = WarningDialog()
         if not dlg.exec():
             sys.exit()
 
-        self.setWindowTitle("My App")
+        self.setWindowTitle("Vaccine Tool")
         self.setFixedSize(QSize(800, 600))
 
-        self.vaccineManager = VaccineManager()
+        self.vaccineManager = vaccineManager
 
         toolbar = QToolBar()
         toolbar.setMovable(False)
@@ -43,9 +42,9 @@ class MainWindow(QMainWindow):
         button_action.triggered.connect(self.toViewIllnesses)
         toolbar.addAction(button_action)
 
-        self.checkVaccinesWidget = PatientCheckWidget(self.vaccineManager)
-        self.viewVaccinesWidget = ViewVaccinesWidget()
-        self.viewIllnessesWidget = ViewIllnessesWidget()
+        self.checkVaccinesWidget = PatientCheckWidget(self, self.vaccineManager)
+        self.viewVaccinesWidget = ViewVaccinesWidget(self.vaccineManager)
+        self.viewIllnessesWidget = ViewIllnessesWidget(self.vaccineManager)
 
         self.stack_layout = QStackedLayout()
 
@@ -60,7 +59,6 @@ class MainWindow(QMainWindow):
 
     def toCheckVaccines(self):
         self.vaccineManager.reLoadVaccines()
-        self.checkVaccinesWidget.refresh()
         self.stack_layout.setCurrentIndex(0)
 
     def toViewVaccines(self):
@@ -70,11 +68,3 @@ class MainWindow(QMainWindow):
     def toViewIllnesses(self):
         self.vaccineManager.reLoadVaccines()
         self.stack_layout.setCurrentIndex(2)
-
-
-app = QApplication(sys.argv)
-
-window = MainWindow()
-window.show()
-
-app.exec()

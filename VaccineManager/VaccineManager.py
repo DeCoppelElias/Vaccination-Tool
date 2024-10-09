@@ -3,11 +3,15 @@ import os
 from VaccineManager.Vaccine import Vaccine
 import datetime
 import pandas as pd
-from VaccineManager.InputVaccinesTerminal import input_vaccines_terminal, get_input_date
+from PyQt6.QtCore import pyqtSignal, QObject
 
 
-class VaccineManager:
+class VaccineManager(QObject):
+    updated = pyqtSignal()
+
     def __init__(self):
+        super().__init__()
+
         exe_dir = os.path.dirname(os.path.abspath(__file__))
         self.excel_dir = os.path.abspath(os.path.join(exe_dir, '../ExcelFiles'))
 
@@ -32,6 +36,22 @@ class VaccineManager:
         self.last_mod_time_min_ages = None
 
         self.reLoadVaccines()
+
+    def reset(self):
+        self.initialised = False
+
+        self.illnesses = []
+        self.vaccines = []
+
+        self.df_illnesses = None
+        self.df_vaccines = None
+        self.df_intervals = None
+        self.df_min_ages = None
+
+        self.last_mod_time_illnesses = None
+        self.last_mod_time_vaccines = None
+        self.last_mod_time_intervals = None
+        self.last_mod_time_min_ages = None
 
     def checkExcelsExist(self):
         if os.path.isfile(self.excel_vaccines_path) and \
@@ -61,6 +81,8 @@ class VaccineManager:
     def reLoadVaccines(self):
         if not self.checkExcelsExist():
             print("reload failed: excel files missing")
+            self.reset()
+            self.updated.emit()
             return
 
         if not self.checkExcelsModified():
@@ -100,6 +122,9 @@ class VaccineManager:
             self.illnesses.append(name)
 
         self.initialised = True
+
+        # Emit signal that values have updated
+        self.updated.emit()
 
     def check_vaccines(self, user_vaccines, birthday):
         remark_dict = {}

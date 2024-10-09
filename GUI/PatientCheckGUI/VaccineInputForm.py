@@ -9,6 +9,8 @@ class VaccineInputForm(QWidget):
     def __init__(self, patientCheckWidget, vaccineManager):
         super().__init__()
 
+        self.setContentsMargins(9, 0, 9, 0)
+
         self.patientCheckWidget = patientCheckWidget
         self.vaccines = vaccineManager.vaccines
         self.vaccineManager = vaccineManager
@@ -21,6 +23,7 @@ class VaccineInputForm(QWidget):
         self.patient_name_input = QLineEdit()
         self.patient_name_input.setFixedSize(QSize(110, 30))
         self.patient_name_input.setPlaceholderText("Full Name")
+        self.patient_name_input.setStyleSheet("color: white;")
 
         self.reset_form_button = QPushButton("Reset Form")
         self.reset_form_button.clicked.connect(self.resetForm)
@@ -79,7 +82,9 @@ class VaccineInputForm(QWidget):
         self.vaccine_layout.addWidget(vaccine_entry)
 
     def remove_vaccine_entry(self, widget):
+        self.vaccine_entries.remove(widget)
         self.vaccine_layout.removeWidget(widget)
+        widget.deleteLater()
 
     def submit_data(self):
         # Check if data is correctly filled in
@@ -111,8 +116,9 @@ class VaccineInputForm(QWidget):
     def resetForm(self):
         self.patient_name_input.setText("")
         self.birthday_input.setDate(QDate.currentDate())
-        for vaccine_entry in self.vaccine_entries:
-            self.vaccine_layout.removeWidget(vaccine_entry)
+        for vaccine_entry in self.vaccine_entries.copy():
+            self.remove_vaccine_entry(vaccine_entry)
+
         self.vaccine_entries = []
         self.add_vaccine_entry()
 
@@ -131,8 +137,8 @@ class VaccineEntryWidget(QGroupBox):
         self.vaccine_combo = QComboBox()
         for vaccine in vaccineInputForm.vaccines:
             self.vaccine_combo.addItem(vaccine.name)
-        self.vaccine_combo.setStyleSheet("QComboBox { padding-left: 10px; }")
         self.vaccine_combo.setFixedSize(QSize(100, 30))
+        self.vaccine_combo.setContentsMargins(10,0,0,0)
 
         # Remove vaccine button
         self.remove_vaccine_button = QPushButton("Remove Vaccine")
